@@ -19,7 +19,7 @@ pipeline {
         stage('Set up Python environment') {
             steps {
                 sh '''
-                    python3 -m venv .venv-ci
+                    python3.12 -m venv .venv-ci
                     . .venv-ci/bin/activate
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt

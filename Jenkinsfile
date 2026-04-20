@@ -19,11 +19,11 @@ pipeline {
         stage('Set up Python environment') {
             steps {
                 sh '''
+                    rm -rf .venv-ci
                     python3.12 -m venv .venv-ci
                     . .venv-ci/bin/activate
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
-                    pip install pytest pytest-cov pysonar
                 '''
             }
         }

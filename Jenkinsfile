@@ -7,6 +7,8 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = 'http://172.31.14.190:9000'
+        AWS_REGION = 'ap-southeast-2'
+        ECR_REPO = 'flask-todo'
     }
 
     stages {
@@ -54,6 +56,24 @@ pipeline {
             steps {
                 sh '''
                     docker build -t flask-todo:ci .
+                '''
+            }
+        }
+        stage('Push Docker image to ECR') {
+            steps {
+                sh '''
+                    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                    ECR_REGISTRY=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    SHORT_SHA=$(git rev-parse --short HEAD)
+                    IMAGE_TAG=${BUILD_NUMBER}-${SHORT_SHA}
+
+                    aws ecr get-login-password --region ${AWS_REGION} | \
+                    docker login --username AWS --password-stdin ${ECR_REGISTRY}
+
+                    docker tag flask-todo:ci ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+                    docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+
+                    echo "Pushed image: ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
                 '''
             }
         }

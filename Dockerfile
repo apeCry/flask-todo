@@ -11,6 +11,9 @@ COPY . .
 
 RUN mkdir -p instance
 
+ENV APP_HOST=0.0.0.0
+ENV PORT=5000
+
 EXPOSE 5000
 
 CMD ["python", "app.py"]

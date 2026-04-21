@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -37,12 +39,19 @@ jobs:
         run: |
           pytest -v --cov=app --cov-report=xml
 
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v7.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+
       - name: Build Docker image
         run: |
           docker build -t flask-todo:ci .
 
       - name: Set image tag
-        id: vars
         run: |
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
           echo "IMAGE_TAG=${GITHUB_RUN_NUMBER}-${SHORT_SHA}" >> $GITHUB_ENV
